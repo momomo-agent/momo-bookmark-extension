@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Momo Bookmark",
-  "version": "1.2.1",
+  "version": "1.5.0",
   "description": "一键收藏当前页面到 Momo 的 #bookmark 频道",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://bookmark.momomo.dev/*"],
