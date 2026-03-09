@@ -1,5 +1,5 @@
-// momo-bookmark-worker v3 — Bot token + allowBots=true
-// 环境变量: DISCORD_BOT_TOKEN, CHANNEL_ID, API_KEY
+// momo-bookmark-worker v4 — Webhook 方式（allowBots=true 放行）
+// 环境变量: WEBHOOK_URL, API_KEY
 
 export default {
   async fetch(request, env) {
@@ -32,22 +32,16 @@ export default {
     let content = url;
     if (note) content += `\n> ${note}`;
 
-    // 用 Bot token 发消息到 #bookmark
-    const resp = await fetch(
-      `https://discord.com/api/v10/channels/${env.CHANNEL_ID}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
-        },
-        body: JSON.stringify({ content }),
-      }
-    );
+    // 用 Webhook 发消息（author.id ≠ botUserId，allowBots=true 放行）
+    const resp = await fetch(env.WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, username: 'Bookmark' }),
+    });
 
     if (!resp.ok) {
       const err = await resp.text();
-      return json({ error: `Discord: ${resp.status}`, detail: err }, 502);
+      return json({ error: `Webhook: ${resp.status}`, detail: err }, 502);
     }
 
     return json({ ok: true }, 200);
