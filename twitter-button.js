@@ -1,6 +1,8 @@
 // twitter-button.js — 在 Twitter/X 帖子上注入收藏按钮
 
 const STORAGE_KEY = 'momo_bookmark_config';
+const DEFAULT_ENDPOINT = 'https://bookmark.link2web.site';
+const DEFAULT_API_KEY = '2a353730f2e8cd9b967f30032ec58957a9946be4cc85f975';
 
 function getConfig() {
   return new Promise(resolve => {
@@ -10,21 +12,19 @@ function getConfig() {
   });
 }
 
-async function sendToDiscord(url) {
+async function sendToBookmark(url) {
   const config = await getConfig();
-  if (!config.webhookUrl) {
-    showToast('请先在插件设置中配置 Webhook URL', true);
-    return;
-  }
+  const endpoint = config.endpoint || DEFAULT_ENDPOINT;
+  const apiKey = config.apiKey || DEFAULT_API_KEY;
 
   try {
-    const resp = await fetch(config.webhookUrl, {
+    const resp = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: config.username || 'kenefe',
-        content: url,
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ url }),
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     showToast('✅ 已收藏');
@@ -106,7 +106,7 @@ function injectButtons() {
 
       btn.style.color = '#5865f2';
       btn.style.pointerEvents = 'none';
-      await sendToDiscord(url);
+      await sendToBookmark(url);
       btn.style.color = '#43b581';
       setTimeout(() => {
         btn.style.color = '';
