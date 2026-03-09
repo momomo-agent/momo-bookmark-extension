@@ -77,7 +77,7 @@ function getTweetUrl(tweetElement) {
 function createBookmarkButton() {
   const btn = document.createElement('button');
   btn.className = 'momo-bookmark-btn';
-  btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
   btn.title = 'Momo 收藏';
   return btn;
 }
