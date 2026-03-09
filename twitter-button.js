@@ -1,7 +1,7 @@
 // twitter-button.js — 在 Twitter/X 帖子上注入收藏按钮
 
 const STORAGE_KEY = 'momo_bookmark_config';
-const DEFAULT_ENDPOINT = 'https://bookmark.link2web.site';
+const DEFAULT_ENDPOINT = 'https://bookmark.momomo.dev';
 const DEFAULT_API_KEY = '2a353730f2e8cd9b967f30032ec58957a9946be4cc85f975';
 
 function getConfig() {

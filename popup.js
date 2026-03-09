@@ -1,7 +1,7 @@
 // popup.js — Momo Bookmark 弹出窗口逻辑
 
 const STORAGE_KEY = 'momo_bookmark_config';
-const DEFAULT_ENDPOINT = 'https://bookmark.link2web.site';
+const DEFAULT_ENDPOINT = 'https://bookmark.momomo.dev';
 const DEFAULT_API_KEY = '2a353730f2e8cd9b967f30032ec58957a9946be4cc85f975';
 
 async function getConfig() {
