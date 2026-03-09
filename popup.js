@@ -1,8 +1,6 @@
-// popup.js — Momo Bookmark 弹出窗口逻辑
+// popup.js — Momo Bookmark 弹出窗口（直连 Discord Webhook）
 
 const STORAGE_KEY = 'momo_bookmark_config';
-const DEFAULT_ENDPOINT = 'https://bookmark.momomo.dev';
-const DEFAULT_API_KEY = '2a353730f2e8cd9b967f30032ec58957a9946be4cc85f975';
 
 async function getConfig() {
   return new Promise(resolve => {
@@ -25,23 +23,29 @@ async function getCurrentTab() {
 
 async function sendBookmark(url, note) {
   const config = await getConfig();
-  const endpoint = config.endpoint || DEFAULT_ENDPOINT;
-  const apiKey = config.apiKey || DEFAULT_API_KEY;
+  const webhookUrl = config.webhookUrl;
 
-  const resp = await fetch(endpoint, {
+  if (!webhookUrl) {
+    throw new Error('请先在设置中填写 Webhook URL');
+  }
+
+  let content = url;
+  if (note) content += `\n> ${note}`;
+
+  const resp = await fetch(webhookUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ url, note: note || undefined }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content,
+      username: 'Bookmark',
+      avatar_url: 'https://raw.githubusercontent.com/momomo-agent/momo-bookmark-extension/main/icons/webhook-avatar.png',
+    }),
   });
 
   if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error || `HTTP ${resp.status}`);
+    const err = await resp.text().catch(() => '');
+    throw new Error(`Discord ${resp.status}: ${err.slice(0, 100)}`);
   }
-  return resp.json();
 }
 
 // ── UI ──
@@ -54,8 +58,7 @@ const settingsToggle = document.getElementById('settings-toggle');
 const backToggle = document.getElementById('back-toggle');
 const mainView = document.getElementById('main-view');
 const settingsView = document.getElementById('settings-view');
-const endpointInput = document.getElementById('endpoint-url');
-const apiKeyInput = document.getElementById('api-key');
+const webhookInput = document.getElementById('webhook-url');
 const saveBtn = document.getElementById('save-btn');
 
 let currentUrl = '';
@@ -68,8 +71,12 @@ let currentUrl = '';
   urlPreview.title = currentUrl;
 
   const config = await getConfig();
-  if (config.endpoint) endpointInput.value = config.endpoint;
-  if (config.apiKey) apiKeyInput.value = config.apiKey;
+  if (config.webhookUrl) webhookInput.value = config.webhookUrl;
+
+  // 没配置 webhook 时提示设置
+  if (!config.webhookUrl) {
+    status.textContent = '⚙️ 请先在设置中填写 Webhook URL';
+  }
 })();
 
 // 发送
@@ -111,14 +118,15 @@ backToggle.addEventListener('click', () => {
 
 // 保存设置
 saveBtn.addEventListener('click', async () => {
-  const config = {
-    endpoint: endpointInput.value.trim() || DEFAULT_ENDPOINT,
-    apiKey: apiKeyInput.value.trim() || DEFAULT_API_KEY,
-  };
-  await saveConfig(config);
+  const webhookUrl = webhookInput.value.trim();
+  if (webhookUrl && !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+    status.textContent = '⚠️ Webhook URL 格式不对';
+    return;
+  }
+  await saveConfig({ webhookUrl });
   settingsView.classList.remove('active');
   mainView.style.display = 'block';
-  status.textContent = '设置已保存';
+  status.textContent = webhookUrl ? '✅ 设置已保存' : '⚠️ 请填写 Webhook URL';
 });
 
 // 快捷键：Enter 发送

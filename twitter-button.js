@@ -1,8 +1,6 @@
-// twitter-button.js — 在 Twitter/X 帖子上注入收藏按钮
+// twitter-button.js — Twitter/X 推文收藏按钮（直连 Discord Webhook）
 
 const STORAGE_KEY = 'momo_bookmark_config';
-const DEFAULT_ENDPOINT = 'https://bookmark.momomo.dev';
-const DEFAULT_API_KEY = '2a353730f2e8cd9b967f30032ec58957a9946be4cc85f975';
 
 function getConfig() {
   return new Promise(resolve => {
@@ -14,17 +12,20 @@ function getConfig() {
 
 async function sendToBookmark(url) {
   const config = await getConfig();
-  const endpoint = config.endpoint || DEFAULT_ENDPOINT;
-  const apiKey = config.apiKey || DEFAULT_API_KEY;
+  if (!config.webhookUrl) {
+    showToast('请先在插件设置中填写 Webhook URL', true);
+    return;
+  }
 
   try {
-    const resp = await fetch(endpoint, {
+    const resp = await fetch(config.webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ url }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: url,
+        username: 'Bookmark',
+        avatar_url: 'https://raw.githubusercontent.com/momomo-agent/momo-bookmark-extension/main/icons/webhook-avatar.png',
+      }),
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     showToast('✅ 已收藏');
@@ -63,13 +64,11 @@ function showToast(message, isError = false) {
 }
 
 function getTweetUrl(tweetElement) {
-  // 从推文元素找到链接
   const timeLink = tweetElement.querySelector('a[href*="/status/"] time');
   if (timeLink) {
     const anchor = timeLink.closest('a');
     if (anchor) return 'https://x.com' + new URL(anchor.href).pathname;
   }
-  // fallback: 找任何 /status/ 链接
   const statusLink = tweetElement.querySelector('a[href*="/status/"]');
   if (statusLink) return 'https://x.com' + new URL(statusLink.href).pathname;
   return null;
@@ -84,11 +83,10 @@ function createBookmarkButton() {
 }
 
 function injectButtons() {
-  // 找到所有推文的操作栏（点赞、转发那一行）
   const actionBars = document.querySelectorAll('[data-testid="tweet"] [role="group"]');
-  
+
   actionBars.forEach(bar => {
-    if (bar.querySelector('.momo-bookmark-btn')) return; // 已注入
+    if (bar.querySelector('.momo-bookmark-btn')) return;
 
     const tweet = bar.closest('[data-testid="tweet"]');
     if (!tweet) return;
@@ -118,11 +116,6 @@ function injectButtons() {
   });
 }
 
-// 监听 DOM 变化（Twitter 是 SPA，需要持续注入）
-const observer = new MutationObserver(() => {
-  injectButtons();
-});
+const observer = new MutationObserver(() => injectButtons());
 observer.observe(document.body, { childList: true, subtree: true });
-
-// 初始注入
 setTimeout(injectButtons, 1000);

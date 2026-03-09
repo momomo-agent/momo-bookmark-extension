@@ -5,53 +5,38 @@
 ## 架构
 
 ```
-Chrome 插件 → Cloudflare Worker (bookmark.momomo.dev) → Discord Webhook → #bookmark 频道 → OpenClaw (allowBots=true) → Momo 自动收藏
+Chrome 插件 → Discord Webhook → #bookmark 频道 → OpenClaw (allowBots=true) → Momo 自动收藏
 ```
 
-### 为什么用 Webhook 而不是 Bot Token？
+直连 Discord Webhook，无中间层。Webhook URL 在插件设置页面配置。
 
-OpenClaw 的消息处理有两层过滤：
-1. **Bot 自身消息**（`author.id === botUserId`）→ **永远丢弃**，任何配置都管不了
-2. **其他 Bot 消息**（`author.bot === true`）→ 受 `allowBots` 配置控制
+### 为什么用 Webhook？
 
-如果用 Momo 的 bot token 发消息，author.id 就是 Momo 自己，会被第 1 层过滤。
-Webhook 消息的 author.id 是 webhook 自己（不是 Momo），只会被第 2 层过滤，`allowBots: true` 可以放行。
+OpenClaw 过滤消息有两层：
+1. `author.id === botUserId` → **永远丢弃**（防自回复循环）
+2. `author.bot === true` → 受 `allowBots` 配置控制
+
+Webhook 消息的 author.id 是 webhook 自己（不是 Momo bot），只命中第 2 层，`allowBots: true` 放行。
 
 ### 组件
 
 | 组件 | 说明 |
 |------|------|
 | `popup.html/js` | 插件弹出窗口，任何页面一键收藏 |
-| `twitter-button.js/css` | Twitter/X 页面注入收藏按钮（在点赞/转发旁边） |
-| `worker/index.js` | Cloudflare Worker，接收请求 → 调 Discord Webhook |
-| `manifest.json` | Chrome Manifest V3 配置 |
-
-### Secrets（Worker 环境变量）
-
-| 变量 | 说明 |
-|------|------|
-| `WEBHOOK_URL` | Discord #bookmark 频道的 Webhook URL |
-| `API_KEY` | 插件认证密钥 |
+| `twitter-button.js/css` | Twitter/X 页面注入收藏按钮（点赞/转发旁边） |
+| `icons/webhook-avatar.png` | Webhook 消息头像 |
 
 ## 安装
 
-### Chrome 插件
 1. 克隆仓库
 2. Chrome → `chrome://extensions/` → 开发者模式 → 加载解压的扩展 → 选项目根目录
-3. 默认配置已内置，开箱即用
+3. 点插件图标 → ⚙️ 设置 → 填入 Discord Webhook URL
 
-### Worker 部署
-```bash
-cd worker
-npx wrangler deploy
-# 设置 secrets
-echo "<webhook-url>" | npx wrangler secret put WEBHOOK_URL
-echo "<api-key>" | npx wrangler secret put API_KEY
-```
+### 创建 Webhook
 
-## OpenClaw 配置
+Discord #bookmark 频道 → 右键 → 编辑频道 → 整合 → Webhook → 新建 → 复制 URL
 
-`~/.openclaw/openclaw.json` 中需要开启 `allowBots`：
+### OpenClaw 配置
 
 ```json
 {
@@ -65,5 +50,5 @@ echo "<api-key>" | npx wrangler secret put API_KEY
 
 ## 使用
 
-- **任何页面**：点击浏览器工具栏的 Momo Bookmark 图标 → 可选添加备注 → 收藏
-- **Twitter/X**：每条推文的操作栏（点赞/转发旁边）会自动出现收藏图标，点击即收藏
+- **任何页面**：点击工具栏图标 → 可选备注 → 收藏
+- **Twitter/X**：推文操作栏自动出现收藏图标，点击即收藏
