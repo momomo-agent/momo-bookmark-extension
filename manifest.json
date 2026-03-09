@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Momo Bookmark",
+  "version": "1.0.0",
+  "description": "一键收藏当前页面到 Momo 的 #bookmark 频道",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://x.com/*", "*://twitter.com/*"],
+      "js": ["twitter-button.js"],
+      "css": ["twitter-button.css"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

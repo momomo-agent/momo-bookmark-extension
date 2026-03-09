@@ -1,0 +1,27 @@
+.momo-bookmark-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  color: rgb(113, 118, 123);
+  transition: all 0.15s ease;
+  margin-left: 4px;
+}
+
+.momo-bookmark-btn:hover {
+  background: rgba(88, 101, 242, 0.1);
+  color: #5865f2;
+}
+
+.momo-bookmark-btn:active {
+  transform: scale(0.9);
+}
+
+.momo-bookmark-btn svg {
+  pointer-events: none;
+}
