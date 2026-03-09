@@ -74,11 +74,33 @@ function getTweetUrl(tweetElement) {
   return null;
 }
 
-function createBookmarkButton() {
+function createBookmarkButton(actionBar) {
   const btn = document.createElement('button');
   btn.className = 'momo-bookmark-btn';
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
   btn.title = 'Momo 收藏';
+
+  // 从相邻原生按钮复制尺寸和样式
+  const siblingBtn = actionBar.querySelector('button');
+  if (siblingBtn) {
+    const cs = window.getComputedStyle(siblingBtn);
+    btn.style.width = cs.width;
+    btn.style.height = cs.height;
+    btn.style.color = cs.color;
+
+    // 找原生按钮里的 SVG，复制尺寸
+    const siblingSvg = siblingBtn.querySelector('svg');
+    if (siblingSvg) {
+      const svgCs = window.getComputedStyle(siblingSvg);
+      const svgW = svgCs.width;
+      const svgH = svgCs.height;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="${svgW}" height="${svgH}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+    } else {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+    }
+  } else {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+  }
+
   return btn;
 }
 
@@ -91,7 +113,7 @@ function injectButtons() {
     const tweet = bar.closest('[data-testid="tweet"]');
     if (!tweet) return;
 
-    const btn = createBookmarkButton();
+    const btn = createBookmarkButton(bar);
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();

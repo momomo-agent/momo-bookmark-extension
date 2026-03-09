@@ -1,15 +1,14 @@
+/* momo-bookmark-btn 基础样式 — 尺寸和颜色从 Twitter 原生按钮动态继承 */
 .momo-bookmark-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34.75px;
-  height: 34.75px;
   border: none;
   background: transparent;
   cursor: pointer;
   border-radius: 9999px;
-  color: rgb(113, 118, 123);
-  transition: all 0.2s ease;
+  color: inherit;
+  transition: color 0.2s ease, background-color 0.2s ease;
   padding: 0;
   margin: 0;
 }
@@ -25,6 +24,4 @@
 
 .momo-bookmark-btn svg {
   pointer-events: none;
-  width: 18.75px;
-  height: 18.75px;
 }
